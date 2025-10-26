@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>JORSELL Market Pro — Purple Glass Edition (SPA)</title>
+  <meta name="description" content="JORSELL Market Pro — Purple Glass Edition. Single-file SPA demo: home, explore, cart, chat, account, dummy auth, wishlist, orders." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{--primary:#6b21a8;--primary-600:#5b1890;--glass:rgba(107,33,168,0.22);--glass-strong:rgba(91,24,144,0.28);--muted:#6b7280}
+    html,body,#app{height:100%}
+    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+    .line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .safe-bottom{padding-bottom:env(safe-area-inset-bottom,12px)}
+
+    /* glass toolbar */
+    .glass-toolbar{backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); background:linear-gradient(90deg,var(--glass),var(--glass-strong)); border-top:1px solid rgba(255,255,255,0.06)}
+
+    /* subtle card hover */
+    .card-hover{transition:transform .18s ease, box-shadow .18s ease}
+    .card-hover:hover{transform:translateY(-6px); box-shadow:0 12px 30px rgba(107,33,168,0.08)}
+
+    /* page transitions */
+    .page{transition:opacity .28s ease, transform .28s ease}
+    .page.hidden{opacity:0; transform:translateY(8px); pointer-events:none}
+    .page:not(.hidden){opacity:1; transform:none}
+
+    /* buttons */
+    .btn-primary{background:linear-gradient(90deg,var(--primary),var(--primary-600)); color:white}
+    .btn-ghost{background:transparent; border:1px solid rgba(107,33,168,0.12); color:var(--primary)}
+
+    /* footer */
+    footer {text-align:center; font-size:12px; color:rgba(255,255,255,0.9);}
+
+    @media (min-width:768px){ .safe-bottom{padding-bottom:18px} }
+  </style>
+</head>
+<body class="bg-gradient-to-b from-white to-gray-50 text-slate-800 antialiased">
+  <div id="app" class="min-h-screen flex flex-col relative pb-24">
+
+    <!-- Header -->
+    <header class="bg-white shadow sticky top-0 z-40">
+      <div class="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
+        <div class="flex items-center gap-3">
+          <button id="menuBtn" class="p-2 rounded-lg hover:bg-gray-100 transition"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[color:var(--primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+          <div class="font-bold text-lg text-[color:var(--primary)] tracking-tight">JORSELL Market</div>
+        </div>
+
+        <div class="flex-1 px-4">
+          <div class="relative">
+            <input id="search" placeholder="Cari produk, e.g. template, e-book, musik..." class="w-full rounded-full py-2 pl-10 pr-4 border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--primary)] transition"/>
+            <div class="absolute left-3 top-2 text-[color:var(--primary)]">🔍</div>
+          </div>
+        </div>
+
+        <div id="headerActions" class="flex items-center gap-3">
+          <button id="flashBtn" class="hidden sm:inline-block px-3 py-2 rounded btn-primary text-sm">Flash Sale</button>
+          <button id="cartBtn" class="p-2 rounded-full hover:bg-gray-100 relative transition"><span id="cartCount" class="absolute -top-1 -right-1 bg-[color:var(--primary)] text-white text-xs rounded-full px-2">0</span>🛒</button>
+          <div id="authArea" class="flex items-center"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="flex-1">
+      <div class="max-w-4xl mx-auto px-4 pt-4 pb-6">
+
+        <!-- HOME -->
+        <section id="page-home" class="page">
+          <div class="relative">
+            <div id="slider" class="rounded-xl overflow-hidden shadow-md h-44 sm:h-56 bg-gradient-to-r from-[color:var(--primary)] to-[color:var(--primary-600)] text-white flex items-center justify-center">
+              <div class="px-6 text-center">
+                <div class="text-2xl font-bold">Big Purple Weekend</div>
+                <div class="text-sm mt-1">Diskon hingga 70% — eksklusif untuk pengguna</div>
+              </div>
+            </div>
+            <div class="mt-3 flex items-center justify-between">
+              <div class="flex gap-2 overflow-x-auto" id="categoryGrid"></div>
+              <div id="flashSaleTimer" class="text-sm text-white font-semibold bg-[color:var(--primary)] px-3 py-1 rounded">00:00:00</div>
+            </div>
+          </div>
+
+          <div class="mt-4 flex items-center justify-between">
+            <h3 class="text-lg font-semibold">Rekomendasi untukmu</h3>
+            <button id="seeAll" class="text-sm text-[color:var(--primary)]">Lihat semua</button>
+          </div>
+
+          <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3"></div>
+
+          <div class="mt-4 grid grid-cols-3 gap-3 text-sm">
+            <button id="myWishlistBtn" class="col-span-1 bg-white rounded-xl p-3 text-center shadow-sm card-hover">❤️ Wishlist</button>
+            <button id="myOrdersBtn" class="col-span-1 bg-white rounded-xl p-3 text-center shadow-sm card-hover">🧾 Pesanan</button>
+            <button id="myAccountBtn" class="col-span-1 bg-white rounded-xl p-3 text-center shadow-sm card-hover">👤 Akun</button>
+          </div>
+        </section>
+
+        <!-- EXPLORE -->
+        <section id="page-explore" class="page hidden">
+          <h2 class="text-xl font-semibold">Jelajahi Kategori</h2>
+          <div class="grid grid-cols-3 gap-3 mt-3" id="exploreCategories"></div>
+          <h3 class="mt-5 font-semibold">Hasil Pencarian</h3>
+          <div id="exploreResults" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3"></div>
+        </section>
+
+        <!-- CART -->
+        <section id="page-cart" class="page hidden">
+          <h2 class="text-xl font-semibold">Keranjang</h2>
+          <div id="cartList" class="mt-3 space-y-3"></div>
+          <div class="mt-4 text-right"><div class="text-sm text-slate-600">Total: <span id="cartTotal">US$0.00</span></div><button id="checkoutBtn" class="mt-2 w-full py-2 rounded btn-primary">Checkout (Simulasi)</button></div>
+        </section>
+
+        <!-- CHAT -->
+        <section id="page-chat" class="page hidden">
+          <h2 class="text-xl font-semibold">Chat / Bantuan</h2>
+          <div class="mt-3 bg-white rounded-xl p-3 shadow-sm">Ini adalah placeholder chat. Integrasi chat (websocket / 3rd-party) bisa ditambahkan nanti.</div>
+        </section>
+
+        <!-- ACCOUNT -->
+        <section id="page-account" class="page hidden">
+          <h2 class="text-xl font-semibold">Akun Saya</h2>
+          <div id="accountArea" class="mt-3"></div>
+          <div id="ordersList" class="mt-4"></div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- Footer above toolbar -->
+    <div class="fixed left-0 right-0 bottom-20 z-40 flex justify-center pointer-events-none">
+      <div class="max-w-4xl w-full px-4">
+        <div class="rounded-xl py-2 text-center text-white/90 bg-[linear-gradient(90deg,rgba(107,33,168,0.12),rgba(91,24,144,0.08))] backdrop-blur-md">© 2025 JORSELL Market. All rights reserved.</div>
+      </div>
+    </div>
+
+    <!-- Bottom glass toolbar (fixed, blur) -->
+    <div class="fixed left-0 right-0 bottom-0 z-50 safe-bottom glass-toolbar">
+      <div class="max-w-4xl mx-auto px-4 py-2 flex justify-between items-center">
+        <button id="navHome" class="flex flex-col items-center text-white/95 text-xs transition transform hover:scale-105">🏠<div class="text-[10px] mt-1">Home</div></button>
+        <button id="navExplore" class="flex flex-col items-center text-white/80 text-xs transition hover:scale-105">🔎<div class="text-[10px] mt-1">Explore</div></button>
+        <button id="navCart" class="flex flex-col items-center text-white/80 text-xs transition hover:scale-105 relative">🛒<div class="text-[10px] mt-1">Cart</div><span id="cartCountToolbar" class="absolute -top-1 -right-3 bg-white text-[color:var(--primary)] rounded-full text-[10px] px-2">0</span></button>
+        <button id="navChat" class="flex flex-col items-center text-white/80 text-xs transition hover:scale-105">💬<div class="text-[10px] mt-1">Chat</div></button>
+        <button id="navAccount" class="flex flex-col items-center text-white/80 text-xs transition hover:scale-105">👤<div class="text-[10px] mt-1">Akun</div></button>
+      </div>
+    </div>
+
+    <!-- Modal root -->
+    <div id="modalRoot" class="fixed inset-0 z-60 hidden items-end sm:items-center justify-center bg-black/50">
+      <div id="modalBox" class="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:w-[640px] max-h-[90vh] overflow-auto p-4"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // --- State ---
+    const DEFAULT_CATEGORIES = ['E-book','Template','Desain','Musik','Plugin','Template UI','Fonts'];
+    let PRODUCTS = Array.from({length:18}).map((_,i)=>({ id:i+1, title:['E-book Panduan SEO','Landing Page Template','Set Icon UI','Loop Musik Chill','Plugin Chat GPT'][i%5]+' #'+(i+1), price:(i%3===0)?'Gratis':(5+i%10)+'.99', category:DEFAULT_CATEGORIES[i%7], img:`https://picsum.photos/seed/jorsell-${i+1}/600/400`, rating:(Math.random()*1.5+3.5).toFixed(1) }));
+
+    let USER = JSON.parse(localStorage.getItem('jorsell_user_v1')||'null');
+    let CART = JSON.parse(localStorage.getItem('jorsell_cart_v1')||'[]');
+    let WISHLIST = JSON.parse(localStorage.getItem('jorsell_wishlist_v1')||'[]');
+    let ORDERS = JSON.parse(localStorage.getItem('jorsell_orders_v1')||'[]');
+
+    // helpers
+    const $ = id=>document.getElementById(id);
+    function saveAll(){ localStorage.setItem('jorsell_cart_v1',JSON.stringify(CART)); localStorage.setItem('jorsell_wishlist_v1',JSON.stringify(WISHLIST)); localStorage.setItem('jorsell_user_v1',JSON.stringify(USER)); localStorage.setItem('jorsell_orders_v1',JSON.stringify(ORDERS)); updateCartUI(); }
+    function updateCartUI(){ $('cartCount').innerText = CART.length; $('cartCountToolbar').innerText = CART.length; }
+
+    // navigation SPA
+    const pages = ['home','explore','cart','chat','account'];
+    function showPage(name){ pages.forEach(p=>{ const el = $('page-'+p); if(el) { if(p===name){ el.classList.remove('hidden'); } else el.classList.add('hidden'); } });
+      // update toolbar active state
+      ['navHome','navExplore','navCart','navChat','navAccount'].forEach(id=>$(id).classList.remove('text-[color:var(--primary)]'));
+      const map = {home:'navHome', explore:'navExplore', cart:'navCart', chat:'navChat', account:'navAccount'};
+      if(map[name]) $(map[name]).classList.add('text-[color:var(--primary)]');
+    }
+
+    // attach nav buttons
+    $('navHome').onclick = ()=> showPage('home');
+    $('navExplore').onclick = ()=> { showPage('explore'); renderExplore(); };
+    $('navCart').onclick = ()=> { showPage('cart'); renderCart(); };
+    $('navChat').onclick = ()=> showPage('chat');
+    $('navAccount').onclick = ()=> { showPage('account'); renderAccount(); };
+
+    // header actions
+    $('cartBtn').onclick = ()=> { showPage('cart'); renderCart(); };
+    $('myWishlistBtn')?.addEventListener('click', ()=>{ showPage('account'); renderAccount('wishlist'); });
+    $('myOrdersBtn')?.addEventListener('click', ()=>{ showPage('account'); renderAccount('orders'); });
+    $('myAccountBtn')?.addEventListener('click', ()=>{ showPage('account'); renderAccount(); });
+
+    // render categories & products
+    function renderCategories(){ const wrap = $('categoryGrid'); wrap.innerHTML=''; DEFAULT_CATEGORIES.forEach(cat=>{ const btn=document.createElement('button'); btn.className='bg-white p-3 rounded-xl shadow-sm min-w-[90px] text-white/95'; btn.style.color='white'; btn.style.background='linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))'; btn.innerHTML=`<div class="font-semibold">${cat}</div><div class="text-xs text-white/70">Lihat</div>`; btn.onclick=()=>{ filterByCategory(cat); showPage('explore'); renderExplore(cat); }; wrap.appendChild(btn); }); }
+
+    function renderProducts(list=PRODUCTS){ const grid = $('productGrid'); grid.innerHTML=''; list.forEach(p=>{ const card=document.createElement('article'); card.className='bg-white rounded-xl overflow-hidden shadow-sm cursor-pointer card-hover'; card.innerHTML = `<img loading="lazy" src="${p.img}" alt="${p.title}" class="w-full h-36 object-cover"><div class="p-3"><div class="font-semibold text-sm line-clamp-2">${p.title}</div><div class="text-xs text-slate-500 mt-1">${p.category} · ⭐ ${p.rating}</div><div class="mt-3 flex items-center justify-between"><div class="font-medium">${p.price==='Gratis'?'Gratis':'US$ '+p.price}</div><div class="flex gap-2"><button class="favBtn px-2 py-1 text-xs rounded" data-id="${p.id}">❤️</button><button class="buyBtn px-2 py-1 text-xs rounded btn-primary" data-id="${p.id}">Beli</button></div></div></div>`; grid.appendChild(card); }); attachProductListeners(); }
+
+    function attachProductListeners(){ document.querySelectorAll('.buyBtn').forEach(b=>{ b.onclick = (e)=>{ const id = Number(e.currentTarget.dataset.id); const p = PRODUCTS.find(x=>x.id===id); openProductModal(p); }; }); document.querySelectorAll('.favBtn').forEach(b=>{ b.onclick = (e)=>{ const id = Number(e.currentTarget.dataset.id); toggleWishlist(id); e.currentTarget.classList.toggle('text-[color:var(--primary)]'); }; }); }
+
+    function filterByCategory(cat){ const res = PRODUCTS.filter(p=>p.category===cat); renderProducts(res); }
+
+    // explore
+    function renderExplore(filterCat){ const wrap = $('exploreCategories'); wrap.innerHTML=''; DEFAULT_CATEGORIES.forEach(cat=>{ const el = document.createElement('div'); el.className='bg-white p-3 rounded-lg text-center shadow-sm cursor-pointer'; el.innerHTML=`<div class="font-semibold text-[color:var(--primary)]">${cat}</div><div class="text-xs text-slate-500">Produk</div>`; el.onclick=()=>{ filterByCategory(cat); showPage('explore'); renderExplore(cat); }; wrap.appendChild(el); }); const res = filterCat ? PRODUCTS.filter(p=>p.category===filterCat) : PRODUCTS; const results = $('exploreResults'); results.innerHTML=''; res.forEach(p=>{ const c=document.createElement('div'); c.className='bg-white rounded-xl overflow-hidden shadow-sm'; c.innerHTML = `<img src="${p.img}" class="w-full h-28 object-cover"><div class="p-2"><div class="text-sm font-semibold line-clamp-2">${p.title}</div><div class="text-xs text-slate-500">${p.price==='Gratis'?'Gratis':'US$ '+p.price}</div></div>`; results.appendChild(c); }); }
+
+    // modal product
+    function openProductModal(p){ const mb = $('modalBox'); mb.innerHTML = `<div><img src="${p.img}" class="w-full h-48 object-cover rounded-lg mb-3"><h3 class="text-lg font-semibold">${p.title}</h3><div class="text-sm text-slate-500">${p.category} · ⭐ ${p.rating}</div><p class="mt-3 font-bold">${p.price==='Gratis'?'Gratis':'US$ '+p.price}</p><p class="text-sm text-slate-500 mt-3">Deskripsi produk demo. File digital akan tersedia setelah checkout (simulasi).</p><div class="mt-4 flex gap-2"><button id="addToCartBtn" class="flex-1 py-2 rounded btn-primary">Tambah ke Keranjang</button><button id="buyNowBtn" class="py-2 px-3 rounded border">Beli Sekarang</button></div></div>`; $('modalRoot').classList.remove('hidden'); $('modalRoot').onclick = (e)=>{ if(e.target === $('modalRoot')) $('modalRoot').classList.add('hidden'); };
+      setTimeout(()=>{ $('addToCartBtn').onclick = ()=>{ CART.push(p); saveAll(); toast('Produk ditambahkan ke keranjang'); $('modalRoot').classList.add('hidden'); }; $('buyNowBtn').onclick = ()=>{ if(!USER){ openAuthModal(); return; } ORDERS.push({id:Date.now(),items:[p],total:p.price==='Gratis'?0:parseFloat(p.price),status:'paid',date:new Date().toLocaleString()}); saveAll(); toast('Pembelian sukses (simulasi) — pesanan ditambahkan ke riwayat'); $('modalRoot').classList.add('hidden'); renderAccount('orders'); showPage('account'); } },120);
+    }
+
+    // wishlist
+    function toggleWishlist(id){ const idx = WISHLIST.findIndex(x=>x.id===id); if(idx>-1){ WISHLIST.splice(idx,1); } else { const prod = PRODUCTS.find(x=>x.id===id); if(prod) WISHLIST.push(prod); } saveAll(); }
+
+    // cart
+    function renderCart(){ const list = $('cartList'); list.innerHTML=''; if(!CART.length){ list.innerHTML='<div class="text-slate-500">Keranjang kosong</div>'; $('cartTotal').innerText='US$0.00'; return; } let total=0; CART.forEach((p,i)=>{ const el = document.createElement('div'); el.className='bg-white p-3 rounded-xl flex items-center gap-3'; el.innerHTML = `<img src="${p.img}" class="w-16 h-12 object-cover rounded"><div class="flex-1"><div class="font-semibold text-sm">${p.title}</div><div class="text-xs text-slate-500">${p.price==='Gratis'?'Gratis':'US$ '+p.price}</div></div><button class="removeBtn text-sm text-[color:var(--primary)]" data-i="${i}">Hapus</button>`; list.appendChild(el); total += (p.price==='Gratis'?0:parseFloat(p.price)); }); document.querySelectorAll('.removeBtn').forEach(b=>b.onclick=(e)=>{ const i = Number(e.currentTarget.dataset.i); CART.splice(i,1); saveAll(); renderCart(); }); $('cartTotal').innerText = 'US$'+total.toFixed(2); }
+
+    $('checkoutBtn').onclick = ()=>{ if(!USER){ openAuthModal(); return; } if(!CART.length){ toast('Keranjang kosong'); return; } ORDERS.push({id:Date.now(),items:[...CART],total:CART.reduce((s,x)=>s+(x.price==='Gratis'?0:parseFloat(x.price)),0),status:'paid',date:new Date().toLocaleString()}); CART=[]; saveAll(); toast('Checkout berhasil (simulasi) — pesanan disimpan di riwayat'); renderAccount('orders'); showPage('account'); }
+
+    // account
+    function renderAccount(tab){ const area = $('accountArea'); area.innerHTML=''; if(!USER){ area.innerHTML = `<div class="bg-white p-4 rounded-xl text-center"><div class="text-lg font-semibold">Masuk untuk pengalaman penuh</div><div class="text-sm text-slate-500 mt-2">Login dummy — nama & foto akan tersimpan secara lokal</div><div class="mt-4 flex gap-2 justify-center"><button id="loginDummy" class="px-4 py-2 rounded btn-primary">Masuk (Dummy)</button><button id="registerDummy" class="px-4 py-2 rounded btn-ghost">Daftar</button></div></div>`; setTimeout(()=>{ $('loginDummy').onclick = ()=>{ USER = {id: 'local-'+Date.now(), name: 'Pengguna Demo', email: 'demo@example.com', photo:'https://picsum.photos/64'}; saveAll(); renderAccount(); toast('Masuk sebagai Pengguna Demo'); }; $('registerDummy').onclick = ()=>{ const name = prompt('Nama kamu?') || 'User'; USER = {id:'local-'+Date.now(),name, email: (name.replace(/\s+/g,'')||'user')+'@example.com', photo:'https://picsum.photos/64'}; saveAll(); renderAccount(); toast('Akun dummy dibuat'); }; },50); return; }
+
+      // signed-in view
+      area.innerHTML = `<div class="bg-white p-4 rounded-xl flex items-center gap-3"><img src="${USER.photo||'https://picsum.photos/64'}" class="w-16 h-16 rounded-full object-cover"><div><div class="font-semibold">${USER.name||USER.email}</div><div class="text-xs text-slate-500">${USER.email||'—'}</div></div><div class="ml-auto"><button id="logoutBtnLocal" class="px-3 py-1 rounded border">Keluar</button></div></div>`;
+      setTimeout(()=>{ $('logoutBtnLocal').onclick = ()=>{ if(confirm('Keluar dari akun?')){ USER = null; saveAll(); renderAccount(); showPage('home'); toast('Berhasil keluar'); } }; },50);
+
+      // orders & wishlist
+      const ordersWrap = $('ordersList'); ordersWrap.innerHTML = '<h3 class="mt-4 font-semibold">Riwayat Pesanan</h3>';
+      if(!ORDERS.length) ordersWrap.innerHTML += '<div class="text-slate-500 mt-2">Belum ada pesanan</div>'; else { ORDERS.slice().reverse().forEach(o=>{ const el = document.createElement('div'); el.className='bg-white p-3 rounded-xl mt-2'; el.innerHTML = `<div class="flex justify-between"><div class="font-semibold">Order #${o.id}</div><div class="text-xs text-slate-500">${o.date}</div></div><div class="text-sm text-slate-600 mt-2">Items: ${o.items.map(it=>it.title).join(', ')}</div><div class="mt-2 font-medium">Total: US$${(o.total||0).toFixed(2)}</div>`; ordersWrap.appendChild(el); }); }
+
+      // wishlist
+      area.innerHTML += '<h3 class="mt-4 font-semibold">Wishlist</h3>';
+      const wl = document.createElement('div'); wl.className='mt-2'; if(!WISHLIST.length) wl.innerHTML = '<div class="text-slate-500">Wishlist kosong</div>'; else { WISHLIST.forEach(p=>{ const el=document.createElement('div'); el.className='bg-white p-3 rounded-xl mt-2 flex items-center gap-3'; el.innerHTML = `<img src="${p.img}" class="w-14 h-12 object-cover rounded"><div class="flex-1"><div class="font-semibold text-sm">${p.title}</div><div class="text-xs text-slate-500">${p.price==='Gratis'?'Gratis':'US$ '+p.price}</div></div><button class="addCartFromWL text-[color:var(--primary)]" data-id="${p.id}">Tambah</button>`; wl.appendChild(el); }); }
+      area.appendChild(wl);
+      document.querySelectorAll('.addCartFromWL').forEach(b=>b.onclick=(e)=>{ const id=Number(e.currentTarget.dataset.id); const p=PRODUCTS.find(x=>x.id===id); CART.push(p); saveAll(); toast('Ditambahkan ke keranjang'); });
+    }
+
+    // auth modal (dummy)
+    function openAuthModal(){ const mb = $('modalBox'); mb.innerHTML = `<div class="text-center"><h3 class="text-lg font-semibold">Masuk ke JORSELL</h3><p class="text-sm text-slate-500 mt-2">Pilih metode masuk (dummy)</p><div class="mt-4 flex gap-2 justify-center"><button id="loginGoogleDummy" class="px-4 py-2 rounded btn-primary">Masuk dengan Google (Sim)</button><button id="loginEmailDummy" class="px-4 py-2 rounded btn-ghost">Masuk dengan Email (Sim)</button></div></div>`; $('modalRoot').classList.remove('hidden'); setTimeout(()=>{ $('loginGoogleDummy').onclick = ()=>{ USER = {id:'local-'+Date.now(), name:'Google User', email:'googleuser@example.com', photo:'https://picsum.photos/64'}; saveAll(); $('modalRoot').classList.add('hidden'); renderAccount(); showPage('account'); toast('Masuk sebagai Google User (sim)'); }; $('loginEmailDummy').onclick = ()=>{ const name = prompt('Nama (dummy)'); if(!name) return; USER = {id:'local-'+Date.now(), name, email:(name.replace(/\s+/g,'')||'user')+'@example.com', photo:'https://picsum.photos/64'}; saveAll(); $('modalRoot').classList.add('hidden'); renderAccount(); showPage('account'); toast('Masuk sebagai '+name); }; },80); }
+
+    // flash sale timer
+    function startFlashTimer(sec){ let t=sec; const el = $('flashSaleTimer'); const iv = setInterval(()=>{ if(t<=0){ clearInterval(iv); el.innerText='Selesai'; return; } t--; const hh=Math.floor(t/3600); const mm=Math.floor((t%3600)/60); const ss=t%60; el.innerText = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`; },1000); }
+
+    // search realtime
+    $('search').addEventListener('input', (e)=>{ const q = e.target.value.trim().toLowerCase(); if(!q){ renderProducts(); return; } const res = PRODUCTS.filter(p=> p.title.toLowerCase().includes(q) || p.category.toLowerCase().includes(q)); renderProducts(res); });
+
+    // toast helper
+    function toast(msg){ const t = document.createElement('div'); t.className='fixed left-1/2 -translate-x-1/2 bottom-40 z-70 bg-[color:var(--primary)] text-white px-4 py-2 rounded-lg shadow-lg'; t.innerText = msg; document.body.appendChild(t); setTimeout(()=>{ t.style.transition='opacity .4s ease, transform .4s ease'; t.style.opacity='0'; t.style.transform='translateY(12px)'; setTimeout(()=>t.remove(),450); },1600); }
+
+    // init
+    function init(){ renderCategories(); renderProducts(); renderExplore(); updateCartUI(); startFlashTimer(60*60*6); if(USER) renderAccount(); showPage('home'); }
+    init();
+
+    // quick actions
+    $('seeAll').onclick = ()=>{ showPage('explore'); renderExplore(); };
+
+  </script>
+</body>
+</html>
